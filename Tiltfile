@@ -58,7 +58,7 @@ k8s_yaml([
 # ⚙️ Define Kubernetes resource
 # -------------------------------
 k8s_resource(
-    'ratelimits-operator',
+    'nginx-ratelimits-operator',
     resource_deps=['init_cluster', 'create_namespace']
 )
 

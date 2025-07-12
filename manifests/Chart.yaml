@@ -1,5 +1,5 @@
 apiVersion: v2
-name: ratelimits-operator
+name: nginx-ratelimits-operator
 description: A Helm chart for deploying the Ratelimits Operator
 type: application
 version: 0.1.0
