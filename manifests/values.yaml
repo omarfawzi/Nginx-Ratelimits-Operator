@@ -1,0 +1,9 @@
+repository:
+  image: nginx-ratelimits-operator
+  tag: latest
+
+namespace: default
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 5
