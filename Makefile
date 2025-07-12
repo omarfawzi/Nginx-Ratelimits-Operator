@@ -3,13 +3,13 @@ IMAGE ?= nginx-ratelimits-operator:latest
 .PHONY: build lint fmt docker
 
 build:
-cd src && go build ./...
+	cd src && go build ./...
 
 lint:
-cd src && go vet ./...
+	cd src && go vet ./...
 
 fmt:
-cd src && gofmt -w `find . -name '*.go'`
+	cd src && gofmt -w `find . -name '*.go'`
 
 docker:
-docker build -t $(IMAGE) src
+	docker build -t $(IMAGE) src
