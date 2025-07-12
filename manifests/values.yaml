@@ -1,5 +1,5 @@
 repository:
-  image: nginx-ratelimits-operator
+  image: ghcr.io/myuser/nginx-ratelimits-operator
   tag: latest
 
 namespace: default
