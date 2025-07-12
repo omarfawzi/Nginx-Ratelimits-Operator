@@ -4,6 +4,8 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -17,6 +19,11 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v3
+
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
 
       - name: Vet
         run: cd src && go vet ./...
@@ -63,7 +70,16 @@ jobs:
           mkdir -p helm-artifacts
           mv *.tgz helm-artifacts/
 
-      - name: Upload Helm Package
+      - name: Log in to GitHub Container Registry for Helm
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push Helm Chart to GHCR
+        run: |
+          CHART_PACKAGE=$(ls helm-artifacts/*.tgz | head -n 1)
+          helm push $CHART_PACKAGE oci://ghcr.io/${{ github.repository_owner }}/charts
+
+      - name: Upload Helm Chart as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: helm-chart
