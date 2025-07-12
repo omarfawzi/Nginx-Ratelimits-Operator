@@ -10,13 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: src/go.mod
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
       - name: Vet
         run: cd src && go vet ./...
+
       - name: Build
         run: cd src && go build ./...
+
       - name: Format check
         run: |
           cd src
@@ -50,6 +57,18 @@ jobs:
           tags: ghcr.io/${{ env.REPO_NAME }}:${{ github.ref_name }}
           platforms: linux/amd64,linux/arm64
 
+      - name: Package Helm Chart
+        run: |
+          helm package manifests
+          mkdir -p helm-artifacts
+          mv *.tgz helm-artifacts/
+
+      - name: Upload Helm Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart
+          path: helm-artifacts/
+
   release:
     name: Release Docker Image
     needs: build
@@ -76,4 +95,3 @@ jobs:
         run: |
           docker tag ghcr.io/${{ env.REPO_NAME }}:${{ github.ref_name }} ghcr.io/${{ env.REPO_NAME }}:latest
           docker push ghcr.io/${{ env.REPO_NAME }}:latest
-
