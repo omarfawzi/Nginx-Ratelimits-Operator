@@ -6,7 +6,7 @@ COPY . .
 
 RUN go mod download
 
-RUN CGO_ENABLED=0 go build -o manager cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o manager cmd/main.go
 
 # Stage 2: Minimal runtime image
 FROM gcr.io/distroless/static
