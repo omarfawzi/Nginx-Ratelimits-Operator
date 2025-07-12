@@ -102,7 +102,7 @@ jobs:
       - name: Push Helm Chart to GHCR
         run: |
           CHART_PACKAGE=$(find helm-artifacts -name '*.tgz' | head -n 1)
-          helm push $CHART_PACKAGE oci://ghcr.io/${{ github.repository_owner }}/charts
+          helm push $CHART_PACKAGE oci://ghcr.io/${{ env.REPO_NAME }}
 
       - name: Upload Helm Chart as Artifact
         uses: actions/upload-artifact@v4
