@@ -1,0 +1,5 @@
+repository:
+  image: nginx-ratelimits-operator
+  tag: latest
+
+namespace: nginx-ratelimits-operator

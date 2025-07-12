@@ -20,6 +20,21 @@ local_resource(
 )
 
 # -------------------------------
+# 📁 Create Namespace for Operator
+# -------------------------------
+local_resource(
+    'create_namespace',
+    '''
+    if ! kubectl get namespace nginx-ratelimits-operator > /dev/null 2>&1; then
+      kubectl create namespace nginx-ratelimits-operator
+    fi
+    ''',
+    deps=[],
+    resource_deps=['init_cluster']
+)
+
+
+# -------------------------------
 # 🐳 Docker build for operator
 # -------------------------------
 docker_build('nginx-ratelimits-operator', 'src', dockerfile='src/Dockerfile')
@@ -27,7 +42,7 @@ docker_build('nginx-ratelimits-operator', 'src', dockerfile='src/Dockerfile')
 # -------------------------------
 # 📦 Helm Deploy for Operator
 # -------------------------------
-k8s_yaml(local('helm template -f manifests/values.yaml manifests'))
+k8s_yaml(local('helm template -f manifests/values.local.yaml manifests'))
 # -------------------------------
 # 📦 Load supporting test YAMLs
 # -------------------------------
@@ -44,7 +59,7 @@ k8s_yaml([
 # -------------------------------
 k8s_resource(
     'ratelimits-operator',
-    resource_deps=['init_cluster']
+    resource_deps=['init_cluster', 'create_namespace']
 )
 
 # -------------------------------
