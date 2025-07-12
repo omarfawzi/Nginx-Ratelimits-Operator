@@ -1,4 +1,4 @@
-package controllers
+package internal
 
 import (
 	v1 "ratelimits-operator/api/v1alpha1"

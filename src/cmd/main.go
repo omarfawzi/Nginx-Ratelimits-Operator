@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"os"
 	v1 "ratelimits-operator/api/v1alpha1"
-	"ratelimits-operator/controllers"
+	"ratelimits-operator/internal"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -30,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&controllers.RateLimitsReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
+	if err := (&internal.RateLimitsReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil {
 		os.Exit(1)
 	}
 

@@ -1,4 +1,4 @@
-package controllers
+package internal
 
 // Ensure these constants are declared somewhere shared
 const (
