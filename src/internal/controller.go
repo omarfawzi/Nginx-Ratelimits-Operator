@@ -65,3 +65,8 @@ func (r *RateLimitsReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	return ctrl.Result{}, nil
 }
+
+func selectorToString(sel metav1.LabelSelector) string {
+	data, _ := json.Marshal(sel)
+	return string(data)
+}
