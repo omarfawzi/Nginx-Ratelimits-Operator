@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: src/go.mod
+      - name: Vet
+        run: cd src && go vet ./...
+      - name: Build
+        run: cd src && go build ./...
+      - name: Format check
+        run: |
+          cd src
+          diff=$(gofmt -l $(find . -name '*.go'))
+          if [ -n "$diff" ]; then
+            echo "The following files need formatting:" >&2
+            echo "$diff" >&2
+            exit 1
+          fi
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/nginx-ratelimits-operator:latest
+
