@@ -151,9 +151,10 @@ func (r *RateLimitsReconciler) removeSidecarIfExists(ctx context.Context, deploy
 	logger := log.FromContext(ctx)
 
 	if hasSidecarInTemplate(&deploy) {
+		orig := deploy.DeepCopy()
 		removeSidecarContainer(&deploy)
 		delete(deploy.Spec.Template.Annotations, sidecarHash)
-		if err := r.Update(ctx, &deploy); err != nil {
+		if err := r.Patch(ctx, &deploy, client.MergeFrom(orig)); err != nil {
 			if errors.IsConflict(err) {
 				logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
 			} else {
