@@ -9,25 +9,50 @@ spec:
     plural: ratelimits
     singular: ratelimits
     shortNames:
-    - rls
+      - rls
   scope: Namespaced
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
-    schema:
-      openAPIV3Schema:
-        type: object
-        properties:
-          spec:
-            type: object
-            properties:
-              selector:
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              env:
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              rateLimits:
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+                - selector
+                - rateLimits
+              properties:
+                selector:
+                  type: object
+                  properties:
+                    matchLabels:
+                      type: object
+                      additionalProperties:
+                        type: string
+                    matchExpressions:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - key
+                          - operator
+                        properties:
+                          key:
+                            type: string
+                          operator:
+                            type: string
+                            enum: ["In", "NotIn", "Exists", "DoesNotExist"]
+                          values:
+                            type: array
+                            items:
+                              type: string
+                env:
+                  type: object
+                  additionalProperties:
+                    type: string
+                rateLimits:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
