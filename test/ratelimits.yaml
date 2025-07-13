@@ -1,7 +1,7 @@
 apiVersion: nginx.ratelimiter/v1alpha1
 kind: RateLimits
 metadata:
-  name: ratelimiter
+  name: my-app-ratelimits
   namespace: my-app
 spec:
   selector:
