@@ -14,8 +14,21 @@ func findContainerIndex(deploy *appsv1.Deployment, name string) int {
 	return -1
 }
 
+func findContainerIndexStatefulSet(sts *appsv1.StatefulSet, name string) int {
+	for i, c := range sts.Spec.Template.Spec.Containers {
+		if c.Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
 func hasSidecarInTemplate(deploy *appsv1.Deployment) bool {
 	return findContainerIndex(deploy, sidecarName) >= 0
+}
+
+func hasSidecarInStatefulSet(sts *appsv1.StatefulSet) bool {
+	return findContainerIndexStatefulSet(sts, sidecarName) >= 0
 }
 
 func removeSidecarContainer(deploy *appsv1.Deployment) {
@@ -26,6 +39,16 @@ func removeSidecarContainer(deploy *appsv1.Deployment) {
 		}
 	}
 	deploy.Spec.Template.Spec.Containers = updated
+}
+
+func removeSidecarContainerStatefulSet(sts *appsv1.StatefulSet) {
+	var updated []corev1.Container
+	for _, c := range sts.Spec.Template.Spec.Containers {
+		if c.Name != sidecarName {
+			updated = append(updated, c)
+		}
+	}
+	sts.Spec.Template.Spec.Containers = updated
 }
 
 func addConfigVolumes(tmpl *corev1.PodTemplateSpec) {

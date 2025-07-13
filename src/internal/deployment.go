@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *RateLimitsReconciler) mapDeploymentToCR(ctx context.Context, obj client.Object) []reconcile.Request {
+func (r *RateLimitsReconciler) mapWorkloadToCR(ctx context.Context, obj client.Object) []reconcile.Request {
 	var crList v1.RateLimitsList
 	if err := r.List(ctx, &crList, &client.ListOptions{Namespace: obj.GetNamespace()}); err != nil {
 		return nil
@@ -24,14 +24,19 @@ func (r *RateLimitsReconciler) mapDeploymentToCR(ctx context.Context, obj client
 		if err != nil {
 			continue
 		}
-		deploy, ok := obj.(*appsv1.Deployment)
-		if !ok {
-			continue
-		}
-		if selector.Matches(labels.Set(deploy.Spec.Template.Labels)) {
-			requests = append(requests, reconcile.Request{
-				NamespacedName: types.NamespacedName{Name: cr.Name, Namespace: cr.Namespace},
-			})
+		switch w := obj.(type) {
+		case *appsv1.Deployment:
+			if selector.Matches(labels.Set(w.Spec.Template.Labels)) {
+				requests = append(requests, reconcile.Request{
+					NamespacedName: types.NamespacedName{Name: cr.Name, Namespace: cr.Namespace},
+				})
+			}
+		case *appsv1.StatefulSet:
+			if selector.Matches(labels.Set(w.Spec.Template.Labels)) {
+				requests = append(requests, reconcile.Request{
+					NamespacedName: types.NamespacedName{Name: cr.Name, Namespace: cr.Namespace},
+				})
+			}
 		}
 	}
 	return requests

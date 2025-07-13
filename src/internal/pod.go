@@ -25,41 +25,65 @@ func (r *RateLimitsReconciler) reconcilePod(ctx context.Context, logger logr.Log
 		return
 	}
 
-	rsOwner := v1.GetControllerOf(pod)
-	if rsOwner == nil || rsOwner.Kind != "ReplicaSet" {
+	owner := v1.GetControllerOf(pod)
+	if owner == nil {
 		return
 	}
 
-	var rs appsv1.ReplicaSet
-	if err := r.Get(ctx, types.NamespacedName{Name: rsOwner.Name, Namespace: pod.Namespace}, &rs); err != nil {
-		if !errors.IsNotFound(err) {
-			logger.Error(err, "Error getting ReplicaSet", "pod", pod.Name)
+	switch owner.Kind {
+	case "ReplicaSet":
+		var rs appsv1.ReplicaSet
+		if err := r.Get(ctx, types.NamespacedName{Name: owner.Name, Namespace: pod.Namespace}, &rs); err != nil {
+			if !errors.IsNotFound(err) {
+				logger.Error(err, "Error getting ReplicaSet", "pod", pod.Name)
+			}
+			return
 		}
-		return
-	}
 
-	deployOwner := v1.GetControllerOf(&rs)
-	if deployOwner == nil || deployOwner.Kind != "Deployment" {
-		return
-	}
-
-	var deploy appsv1.Deployment
-	if err := r.Get(ctx, types.NamespacedName{Name: deployOwner.Name, Namespace: pod.Namespace}, &deploy); err != nil {
-		if !errors.IsNotFound(err) {
-			logger.Error(err, "Error getting Deployment", "pod", pod.Name)
+		deployOwner := v1.GetControllerOf(&rs)
+		if deployOwner == nil || deployOwner.Kind != "Deployment" {
+			return
 		}
-		return
-	}
 
-	if r.needsSidecarUpdate(&deploy, rl) {
-		orig := deploy.DeepCopy()
-		injectSideCar(logger, &deploy, *rl)
-		r.updateDeploymentHash(&deploy, rl)
-		if err := r.Patch(ctx, &deploy, client.MergeFrom(orig)); err != nil {
-			if errors.IsConflict(err) {
-				logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
-			} else {
-				logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
+		var deploy appsv1.Deployment
+		if err := r.Get(ctx, types.NamespacedName{Name: deployOwner.Name, Namespace: pod.Namespace}, &deploy); err != nil {
+			if !errors.IsNotFound(err) {
+				logger.Error(err, "Error getting Deployment", "pod", pod.Name)
+			}
+			return
+		}
+
+		if r.needsSidecarUpdate(&deploy, rl) {
+			orig := deploy.DeepCopy()
+			injectSideCar(logger, &deploy, *rl)
+			r.updateDeploymentHash(&deploy, rl)
+			if err := r.Patch(ctx, &deploy, client.MergeFrom(orig)); err != nil {
+				if errors.IsConflict(err) {
+					logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
+				} else {
+					logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
+				}
+			}
+		}
+	case "StatefulSet":
+		var sts appsv1.StatefulSet
+		if err := r.Get(ctx, types.NamespacedName{Name: owner.Name, Namespace: pod.Namespace}, &sts); err != nil {
+			if !errors.IsNotFound(err) {
+				logger.Error(err, "Error getting StatefulSet", "pod", pod.Name)
+			}
+			return
+		}
+
+		if r.needsStatefulSetSidecarUpdate(&sts, rl) {
+			orig := sts.DeepCopy()
+			injectSideCarStatefulSet(logger, &sts, *rl)
+			r.updateStatefulSetHash(&sts, rl)
+			if err := r.Patch(ctx, &sts, client.MergeFrom(orig)); err != nil {
+				if errors.IsConflict(err) {
+					logger.Info("Skipping update due to conflict", "statefulset", sts.Name)
+				} else {
+					logger.Error(err, "Failed to update StatefulSet with sidecar", "statefulset", sts.Name)
+				}
 			}
 		}
 	}
