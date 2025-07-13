@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -16,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	v1 "ratelimits-operator/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 func (r *RateLimitsReconciler) needsSidecarUpdate(deploy *appsv1.Deployment, rl *v1.RateLimits) bool {
@@ -113,8 +113,6 @@ func injectSideCar(logger logr.Logger, deploy *appsv1.Deployment, rl v1.RateLimi
 }
 
 func (r *RateLimitsReconciler) removeSidecarFromOldMatches(ctx context.Context, ns string, oldSel, newSel labels.Selector) {
-	logger := log.FromContext(ctx)
-
 	var pods corev1.PodList
 	if err := r.List(ctx, &pods, &client.ListOptions{Namespace: ns, LabelSelector: oldSel}); err != nil {
 		return
@@ -145,15 +143,21 @@ func (r *RateLimitsReconciler) removeSidecarFromOldMatches(ctx context.Context, 
 			continue
 		}
 
-		if hasSidecarInTemplate(&deploy) {
-			removeSidecarContainer(&deploy)
-			delete(deploy.Spec.Template.Annotations, sidecarHash)
-			if err := r.Update(ctx, &deploy); err != nil {
-				if errors.IsConflict(err) {
-					logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
-				} else {
-					logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
-				}
+		r.removeSidecarIfExists(ctx, deploy)
+	}
+}
+
+func (r *RateLimitsReconciler) removeSidecarIfExists(ctx context.Context, deploy appsv1.Deployment) {
+	logger := log.FromContext(ctx)
+
+	if hasSidecarInTemplate(&deploy) {
+		removeSidecarContainer(&deploy)
+		delete(deploy.Spec.Template.Annotations, sidecarHash)
+		if err := r.Update(ctx, &deploy); err != nil {
+			if errors.IsConflict(err) {
+				logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
+			} else {
+				logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
 			}
 		}
 	}

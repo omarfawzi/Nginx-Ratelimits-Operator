@@ -27,21 +27,10 @@ func (r *RateLimitsReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if client.IgnoreNotFound(err) == nil {
 			logger.Info("RateLimits CR deleted, restarting workloads and cleaning up", "name", req.NamespacedName)
 
-			// Restart deployments with sidecar
 			var deployList appsv1.DeploymentList
 			if err := r.List(ctx, &deployList, &client.ListOptions{Namespace: req.Namespace}); err == nil {
 				for _, deploy := range deployList.Items {
-					if hasSidecarInTemplate(&deploy) {
-						removeSidecarContainer(&deploy)
-						delete(deploy.Spec.Template.Annotations, sidecarHash)
-						if err := r.Update(ctx, &deploy); err != nil {
-							if errors.IsConflict(err) {
-								logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
-							} else {
-								logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
-							}
-						}
-					}
+					r.removeSidecarIfExists(ctx, deploy)
 				}
 			}
 

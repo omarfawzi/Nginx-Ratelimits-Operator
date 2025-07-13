@@ -23,7 +23,7 @@ func init() {
 }
 
 func main() {
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true), zap.Level(zapcore.InfoLevel)))
+	ctrl.SetLogger(zap.New(zap.Level(zapcore.InfoLevel)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{Scheme: scheme})
 	if err != nil {
