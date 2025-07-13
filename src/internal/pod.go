@@ -52,9 +52,10 @@ func (r *RateLimitsReconciler) reconcilePod(ctx context.Context, logger logr.Log
 	}
 
 	if r.needsSidecarUpdate(&deploy, rl) {
+		orig := deploy.DeepCopy()
 		injectSideCar(logger, &deploy, *rl)
 		r.updateDeploymentHash(&deploy, rl)
-		if err := r.Update(ctx, &deploy); err != nil {
+		if err := r.Patch(ctx, &deploy, client.MergeFrom(orig)); err != nil {
 			if errors.IsConflict(err) {
 				logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
 			} else {

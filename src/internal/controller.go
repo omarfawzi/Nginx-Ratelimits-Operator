@@ -70,11 +70,12 @@ func (r *RateLimitsReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
+	orig := rateLimits.DeepCopy()
 	if rateLimits.Annotations == nil {
 		rateLimits.Annotations = map[string]string{}
 	}
 	rateLimits.Annotations[selectorAnnotation] = currentSelectorStr
-	if err := r.Update(ctx, &rateLimits); err != nil {
+	if err := r.Patch(ctx, &rateLimits, client.MergeFrom(orig)); err != nil {
 		if errors.IsConflict(err) {
 			logger.Info("Skipping annotation update due to conflict", "ratelimits", rateLimits.Name)
 		} else {
