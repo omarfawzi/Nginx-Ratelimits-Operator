@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -148,7 +149,11 @@ func (r *RateLimitsReconciler) removeSidecarFromOldMatches(ctx context.Context, 
 			removeSidecarContainer(&deploy)
 			delete(deploy.Spec.Template.Annotations, sidecarHash)
 			if err := r.Update(ctx, &deploy); err != nil {
-				logger.Error(err, "Failed to update Deployment to remove sidecar", "deployment", deploy.Name)
+				if errors.IsConflict(err) {
+					logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
+				} else {
+					logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
+				}
 			}
 		}
 	}

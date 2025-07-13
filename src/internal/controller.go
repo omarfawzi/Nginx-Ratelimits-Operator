@@ -3,6 +3,8 @@ package internal
 import (
 	"context"
 	"encoding/json"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	v1 "ratelimits-operator/api/v1alpha1"
@@ -20,8 +22,32 @@ func (r *RateLimitsReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	logger := log.FromContext(ctx)
 
 	var rateLimits v1.RateLimits
+
 	if err := r.Get(ctx, req.NamespacedName, &rateLimits); err != nil {
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		if client.IgnoreNotFound(err) == nil {
+			logger.Info("RateLimits CR deleted, restarting workloads and cleaning up", "name", req.NamespacedName)
+
+			// Restart deployments with sidecar
+			var deployList appsv1.DeploymentList
+			if err := r.List(ctx, &deployList, &client.ListOptions{Namespace: req.Namespace}); err == nil {
+				for _, deploy := range deployList.Items {
+					if hasSidecarInTemplate(&deploy) {
+						removeSidecarContainer(&deploy)
+						delete(deploy.Spec.Template.Annotations, sidecarHash)
+						if err := r.Update(ctx, &deploy); err != nil {
+							if errors.IsConflict(err) {
+								logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
+							} else {
+								logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
+							}
+						}
+					}
+				}
+			}
+			
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
 	}
 
 	selector, err := metav1.LabelSelectorAsSelector(&rateLimits.Spec.Selector)
@@ -60,7 +86,11 @@ func (r *RateLimitsReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 	rateLimits.Annotations[selectorAnnotation] = currentSelectorStr
 	if err := r.Update(ctx, &rateLimits); err != nil {
-		logger.Error(err, "Failed to update selector annotation")
+		if errors.IsConflict(err) {
+			logger.Info("Skipping annotation update due to conflict", "ratelimits", rateLimits.Name)
+		} else {
+			logger.Error(err, "Failed to update selector annotation")
+		}
 	}
 
 	return ctrl.Result{}, nil

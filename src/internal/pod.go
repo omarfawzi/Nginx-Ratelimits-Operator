@@ -55,7 +55,11 @@ func (r *RateLimitsReconciler) reconcilePod(ctx context.Context, logger logr.Log
 		injectSideCar(logger, &deploy, *rl)
 		r.updateDeploymentHash(&deploy, rl)
 		if err := r.Update(ctx, &deploy); err != nil {
-			logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
+			if errors.IsConflict(err) {
+				logger.Info("Skipping update due to conflict", "deployment", deploy.Name)
+			} else {
+				logger.Error(err, "Failed to update Deployment with sidecar", "deployment", deploy.Name)
+			}
 		}
 	}
 }
