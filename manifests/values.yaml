@@ -1,9 +1,0 @@
-repository:
-  image: ghcr.io/omarfawzi/nginx-ratelimits-operator
-  tag: latest
-
-namespace: nginx-ratelimits-operator
-
-autoscaling:
-  minReplicas: 1
-  maxReplicas: 5

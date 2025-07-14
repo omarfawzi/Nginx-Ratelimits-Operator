@@ -1,4 +1,0 @@
-owner: omarfawzi
-repo: Nginx-Ratelimits-Operator
-charts_dir: manifests
-release_name_template: "{{ .Name }}-{{ .Version }}"
