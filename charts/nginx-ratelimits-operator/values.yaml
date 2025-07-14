@@ -1,6 +1,6 @@
 repository:
   image: ghcr.io/omarfawzi/nginx-ratelimits-operator
-  tag: latest
+  tag: v1.5.0
 
 namespace: nginx-ratelimits-operator
 
