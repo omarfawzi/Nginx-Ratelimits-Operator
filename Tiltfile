@@ -42,7 +42,7 @@ docker_build('nginx-ratelimits-operator', 'src', dockerfile='src/Dockerfile')
 # -------------------------------
 # 📦 Helm Deploy for Operator
 # -------------------------------
-k8s_yaml(local('helm template -f manifests/values.local.yaml manifests'))
+k8s_yaml(local('helm template -f charts/values.local.yaml charts'))
 # -------------------------------
 # 📦 Load supporting test YAMLs
 # -------------------------------
