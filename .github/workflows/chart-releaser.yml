@@ -22,5 +22,6 @@ jobs:
         with:
           config: .cr.yaml
           charts_dir: manifests
+          skip_existing: false
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
