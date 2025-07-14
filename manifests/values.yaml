@@ -5,5 +5,5 @@ repository:
 namespace: nginx-ratelimits-operator
 
 autoscaling:
-  minReplicas: 1
+  minReplicas: 3
   maxReplicas: 5
