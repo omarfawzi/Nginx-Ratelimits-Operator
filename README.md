@@ -1,8 +1,10 @@
+![Test Status](https://github.com/omarfawzi/Nginx-Ratelimits-Operator/actions/workflows/ci.yml/badge.svg)
+
 # Nginx Ratelimits Operator
 
 A Kubernetes operator that injects an Nginx sidecar to enforce dynamic rate limiting rules. It watches custom `RateLimits` resources and automatically updates your application deployments with the proper Nginx configuration.
 
-This operator works in tandem with the [Nginx Ratelimiter Proxy](https://github.com/omarfawzi/Nginx-Ratelimiter-Proxy) project to apply request quotas to any Kubernetes workload.
+This operator works in tandem with the [Nginx Ratelimits Proxy](https://github.com/omarfawzi/Nginx-Ratelimits-Proxy) project to apply request quotas to any Kubernetes workload.
 
 ## Features
 
