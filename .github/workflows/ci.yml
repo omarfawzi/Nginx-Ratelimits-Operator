@@ -80,7 +80,7 @@ jobs:
           file: ./src/Dockerfile
           push: true
           tags: ghcr.io/${{ env.REPO_NAME }}:${{ github.ref_name }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
 
   release:
     name: Release Docker Image
