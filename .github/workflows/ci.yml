@@ -92,27 +92,6 @@ jobs:
           tags: ghcr.io/${{ env.REPO_NAME }}:${{ github.ref_name }}
           platforms: linux/amd64,linux/arm64
 
-      - name: Package Helm Chart
-        run: |
-          helm package manifests
-          mkdir -p helm-artifacts
-          mv *.tgz helm-artifacts/
-
-      - name: Log in to GitHub Container Registry for Helm
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Push Helm Chart to GHCR
-        run: |
-          CHART_PACKAGE=$(find helm-artifacts -name '*.tgz' | head -n 1)
-          helm push $CHART_PACKAGE oci://ghcr.io/${{ env.REPO_NAME }}
-
-      - name: Upload Helm Chart as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: helm-chart
-          path: helm-artifacts/
-
   release:
     name: Release Docker Image
     needs: build
