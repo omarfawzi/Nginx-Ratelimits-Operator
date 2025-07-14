@@ -18,7 +18,7 @@ This operator works in tandem with the [Nginx Ratelimits Proxy](https://github.c
 
 ```bash
 helm repo add nginx-ratelimits https://omarfawzi.github.io/Nginx-Ratelimits-Operator
-helm install nginx-ratelimits-operator nginx-ratelimits/nginx-ratelimits-operator --version 1.4.8
+helm install nginx-ratelimits-operator nginx-ratelimits/nginx-ratelimits-operator --version 1.5.0
 ```
 ## Development
 
