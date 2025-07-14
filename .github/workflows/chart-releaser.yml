@@ -17,10 +17,10 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v3
 
-      - name: Install chart-releaser
+      - name: Run Helm Chart Releaser
         uses: helm/chart-releaser-action@v1.5.0
+        with:
+          config: .cr.yaml
+          charts_dir: manifests
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          charts_dir: manifests
-          config: .cr.yaml
