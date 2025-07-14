@@ -14,22 +14,11 @@ This operator works in tandem with the [Nginx Ratelimits Proxy](https://github.c
 - Helm chart for easy installation
 - Development environment powered by Tilt
 
-## Quick start
+## Install via Helm
 
 ```bash
-# build the Go binaries
-make build
-
-# optionally build and push the container image
-make docker IMAGE=ghcr.io/myuser/nginx-ratelimits-operator:latest
-docker push ghcr.io/myuser/nginx-ratelimits-operator:latest
-
-# install the operator using helm
-helm install ratelimits-operator manifests
+helm install nginx-ratelimits-operator oci://ghcr.io/omarfawzi/nginx-ratelimits-operator --version 1.1.0
 ```
-
-Apply the sample `RateLimits` from the `test` directory to see the operator in action.
-
 ## Development
 
 Tilt can create a local Kind cluster and deploy the operator for iterative development:
@@ -43,3 +32,6 @@ tilt up
 ```
 
 See the `test/` directory for example workloads and rate limit definitions.
+
+## Tests
+Apply the sample `RateLimits` from the `test` directory to see the operator in action.
