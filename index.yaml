@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   nginx-ratelimits-operator:
   - apiVersion: v2
+    created: "2025-07-14T14:08:15.795531049Z"
+    description: A Helm chart for deploying the Ratelimits Operator
+    digest: c47c76d2cb05f28fab82f21c97f7d7d32335e966441d455f8ffac88c82a4b379
+    name: nginx-ratelimits-operator
+    type: application
+    urls:
+    - https://github.com/omarfawzi/Nginx-Ratelimits-Operator/releases/download/nginx-ratelimits-operator-1.5.0/nginx-ratelimits-operator-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
     created: "2025-07-14T10:35:25.283714148Z"
     description: A Helm chart for deploying the Ratelimits Operator
     digest: b0c25d8c218346d427d46fbab369716e31224da072c38632fa804c1e5b1ffe71
@@ -10,4 +19,4 @@ entries:
     urls:
     - https://github.com/omarfawzi/Nginx-Ratelimits-Operator/releases/download/nginx-ratelimits-operator-1.4.8/nginx-ratelimits-operator-1.4.8.tgz
     version: 1.4.8
-generated: "2025-07-14T10:35:25.28372065Z"
+generated: "2025-07-14T14:08:15.79554232Z"
